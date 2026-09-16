@@ -41,5 +41,6 @@ describe('ExperiencePass email template gallery', () => {
     expect(markup).not.toContain('Adaptive Card')
     expect(markup).not.toContain('Outlook tooling')
     expect(markup).not.toContain('Action behavior')
+    expect(markup).not.toContain('ExperiencePass')
   })
 })

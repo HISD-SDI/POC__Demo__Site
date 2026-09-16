@@ -8,6 +8,14 @@ import {
 const templateIds = emailTemplateFixtures.map(({ id }) => id)
 
 describe('finalized ExperiencePass email templates', () => {
+  it('uses the spaced Experience Pass product name in every stakeholder-facing email', () => {
+    for (const fixture of emailTemplateFixtures) {
+      const message = buildExperiencePassEmail(fixture.id, fixture.context)
+      expect(message.html).not.toContain('ExperiencePass')
+      expect(message.text).not.toContain('ExperiencePass')
+    }
+  })
+
   it('publishes the complete requester, approver, and department template set', () => {
     expect(templateIds).toEqual([
       'submitted-receipt',
@@ -59,7 +67,7 @@ describe('finalized ExperiencePass email templates', () => {
   })
 
   it.each(['cte-notification', 'title-i-notification'] as const)(
-    '%s directs follow-up to the dynamically supplied latest approver without offering approval actions',
+    '%s links to the Experience Pass Data Workspace and directs follow-up to the latest approver',
     (templateId) => {
       const message = buildExperiencePassEmail(templateId, demoNotificationContext)
       for (const value of ['Latest Approver', 'Jane Smith', 'Senior Executive Director', 'jsmith@houstonisd.org']) {
@@ -67,6 +75,10 @@ describe('finalized ExperiencePass email templates', () => {
         expect(message.text).toContain(value)
       }
       expect(message.html).toContain('coordinate with the latest approver in the approval chain')
+      expect(message.html).toContain('Experience Pass Data Workspace')
+      expect(message.html).toContain('View in Data Workspace')
+      expect(message.html).toContain(demoNotificationContext.dataWorkspaceUrl)
+      expect(message.text).toContain(`View in Data Workspace: ${demoNotificationContext.dataWorkspaceUrl}`)
       expect(message.html).not.toContain('>Approve<')
       expect(message.html).not.toContain('>Reject<')
     },
@@ -82,7 +94,7 @@ describe('finalized ExperiencePass email templates', () => {
       'Houston Museum of Natural Science',
       'August 18, 2026',
       'Local field trip for 84 students and 8 chaperones',
-      'Open Request in ExperiencePass',
+      'View Request',
     ]) expect(message.html).toContain(value)
 
     expect(message.html).not.toContain('Latest Approver')
@@ -91,11 +103,11 @@ describe('finalized ExperiencePass email templates', () => {
   })
 
   it.each(['pending-approval', 'pending-approval-additional-review'] as const)(
-    '%s sends the approver to ExperiencePass instead of offering email decisions',
+    '%s sends the approver to Experience Pass instead of offering email decisions',
     (templateId) => {
       const message = buildExperiencePassEmail(templateId, demoNotificationContext)
 
-      expect(message.html).toContain('Open Request in ExperiencePass')
+      expect(message.html).toContain('View Request')
       expect(message.html).not.toContain('>Approve<')
       expect(message.html).not.toContain('>Reject<')
       expect(message.html).not.toContain('Confirm Reject')
@@ -120,6 +132,7 @@ describe('finalized ExperiencePass email templates', () => {
         role: 'Area Chief',
         email: 'arivera@houstonisd.org',
       },
+      dataWorkspaceUrl: 'https://experience-pass-data-workspace.example.invalid/requests/FTR-2099',
     })
 
     for (const value of ['FTR-2099', 'Northside High School', 'Space Center Houston', 'Alex Rivera', 'Area Chief', 'arivera@houstonisd.org']) {
@@ -127,12 +140,27 @@ describe('finalized ExperiencePass email templates', () => {
       expect(message.text).toContain(value)
     }
     expect(message.html).not.toContain('Jane Smith')
+    expect(message.html).toContain('https://experience-pass-data-workspace.example.invalid/requests/FTR-2099')
+  })
+
+  it('standardizes every non-CTE and non-Title I action as View Request', () => {
+    for (const fixture of emailTemplateFixtures.filter(({ id }) => !['cte-notification', 'title-i-notification'].includes(id))) {
+      const message = buildExperiencePassEmail(fixture.id, fixture.context)
+      if (message.html.includes('<div style="margin-top:26px">')) {
+        expect(message.html).toContain('>View Request</a>')
+        expect(message.text).toContain(`View Request: ${fixture.context.reviewUrl}`)
+      }
+    }
   })
 
   it('keeps all preview links backend-agnostic and non-routable', () => {
     for (const fixture of emailTemplateFixtures) {
       const message = buildExperiencePassEmail(fixture.id, fixture.context)
-      if (message.html.includes('href=')) expect(message.html).toContain('https://experience-pass.example.invalid/requests/FTR-1042')
+      if (fixture.id === 'cte-notification' || fixture.id === 'title-i-notification') {
+        expect(message.html).toContain('https://experience-pass-data-workspace.example.invalid/requests/FTR-1042')
+      } else if (message.html.includes('<div style="margin-top:26px">')) {
+        expect(message.html).toContain('https://experience-pass.example.invalid/requests/FTR-1042')
+      }
     }
   })
 

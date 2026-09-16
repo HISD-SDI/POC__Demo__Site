@@ -9,7 +9,7 @@ import './approvalNotificationGallery.css'
 
 const audienceGroups: readonly { audience: EmailAudience; heading: string; description: string }[] = [
   { audience: 'requester', heading: 'Requester Notifications', description: 'Receipts, final outcomes, and requests for clarification.' },
-  { audience: 'approver', heading: 'Approver Notifications', description: 'Approval requests that continue in ExperiencePass.' },
+  { audience: 'approver', heading: 'Approver Notifications', description: 'Approval requests that continue in Experience Pass.' },
   { audience: 'department', heading: 'Department Notifications', description: 'Direct CTE, Title I, and Transportation Services coordination.' },
 ]
 
@@ -34,7 +34,7 @@ export function ApprovalNotificationGallery() {
           <div>
             <span className="notification-gallery-kicker">Stakeholder Preview</span>
             <h1>Approval Notification Gallery</h1>
-            <p>Finalized ExperiencePass email templates for requester, approver, and department communications.</p>
+            <p>Finalized Experience Pass email templates for requester, approver, and department communications.</p>
           </div>
           <span className="notification-preview-badge">Presentation only</span>
         </div>

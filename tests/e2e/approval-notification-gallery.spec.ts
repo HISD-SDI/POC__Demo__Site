@@ -13,9 +13,9 @@ test('finalized gallery separates audiences and previews department notification
   await expect(page.getByRole('button', { name: /Approval Confirmation/ })).toHaveCount(0)
   await expect(page.getByRole('button', { name: /Reject Confirmation/ })).toHaveCount(0)
 
-  await page.getByRole('button', { name: 'Pending Approval Directs the approver to review and act in ExperiencePass.' }).click()
+  await page.getByRole('button', { name: 'Pending Approval Directs the approver to review and act in Experience Pass.' }).click()
   const pending = page.getByTitle('Pending Approval desktop email preview').contentFrame()
-  await expect(pending.getByRole('link', { name: 'Open Request in ExperiencePass' })).toBeVisible()
+  await expect(pending.getByRole('link', { name: 'View Request' })).toBeVisible()
   await expect(pending.getByRole('button', { name: 'Approve' })).toHaveCount(0)
   await expect(pending.getByRole('button', { name: 'Reject' })).toHaveCount(0)
 
@@ -25,18 +25,21 @@ test('finalized gallery separates audiences and previews department notification
   await expect(cte.getByText('Jane Smith', { exact: true })).toBeVisible()
   await expect(cte.getByText('Senior Executive Director', { exact: true })).toBeVisible()
   await expect(cte.getByRole('link', { name: 'jsmith@houstonisd.org' })).toBeVisible()
+  await expect(cte.getByText(/Experience Pass Data Workspace/)).toBeVisible()
+  await expect(cte.getByRole('link', { name: 'View in Data Workspace' })).toBeVisible()
   await expect(cte.getByRole('button', { name: 'Approve' })).toHaveCount(0)
 
   await page.getByRole('button', { name: /Title I Notification/ }).click()
   const titleI = page.getByTitle('Title I Notification desktop email preview').contentFrame()
   await expect(titleI.getByText(/coordinate with the latest approver in the approval chain/i)).toBeVisible()
+  await expect(titleI.getByRole('link', { name: 'View in Data Workspace' })).toBeVisible()
 
   await page.getByRole('button', { name: /Transportation Services Notification/ }).click()
   const transportation = page.getByTitle('Transportation Services Notification desktop email preview').contentFrame()
   await expect(transportation.getByText('Jones High School', { exact: true })).toBeVisible()
   await expect(transportation.getByText('Campus Number', { exact: true })).toBeVisible()
   await expect(transportation.getByText('Houston Museum of Natural Science', { exact: true })).toBeVisible()
-  await expect(transportation.getByRole('link', { name: 'Open Request in ExperiencePass' })).toBeVisible()
+  await expect(transportation.getByRole('link', { name: 'View Request' })).toBeVisible()
   await expect(transportation.getByText('Latest Approver')).toHaveCount(0)
 })
 

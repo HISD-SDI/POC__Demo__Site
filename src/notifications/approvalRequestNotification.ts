@@ -37,6 +37,7 @@ export type NotificationContext = {
   numberOfBuses: number
   currentApprovalStage: string
   reviewUrl: string
+  dataWorkspaceUrl: string
   approvalPath: readonly ApprovalRouteStep[]
   rejectionReason: string
   requestedDetails: string
@@ -93,6 +94,7 @@ export const demoNotificationContext: NotificationContext = {
   numberOfBuses: 2,
   currentApprovalStage: 'Principal',
   reviewUrl: 'https://experience-pass.example.invalid/requests/FTR-1042',
+  dataWorkspaceUrl: 'https://experience-pass-data-workspace.example.invalid/requests/FTR-1042',
   approvalPath: [
     { stage: 'Principal', approverName: 'Dr. Jordan Lee' },
     { stage: 'Senior Executive Director', approverName: 'Jane Smith' },
@@ -122,13 +124,13 @@ export const emailTemplateFixtures: readonly EmailTemplateFixture[] = [
   fixture('submitted-receipt-title-i-hisd-bus', 'requester', 'Submitted Receipt · Title I + HISD Bus', 'Shows both external coordination notices below the approval path.'),
   fixture('approved', 'requester', 'Approved', 'Confirms every displayed approval stage and reminds the requester of trip details.', { ...demoNotificationContext, numberOfBuses: 2 }),
   fixture('rejected', 'requester', 'Rejected', 'Explains the rejection and keeps the request details available.'),
-  fixture('request-for-details', 'requester', 'Request for Details', 'Tells the requester what must be clarified in ExperiencePass.'),
-  fixture('pending-approval', 'approver', 'Pending Approval', 'Directs the approver to review and act in ExperiencePass.'),
-  fixture('pending-approval-additional-review', 'approver', 'Pending Approval · Additional Review', 'Uses the blue additional-review status and directs the approver to ExperiencePass.'),
+  fixture('request-for-details', 'requester', 'Request for Details', 'Tells the requester what must be clarified in Experience Pass.'),
+  fixture('pending-approval', 'approver', 'Pending Approval', 'Directs the approver to review and act in Experience Pass.'),
+  fixture('pending-approval-additional-review', 'approver', 'Pending Approval · Additional Review', 'Uses the blue additional-review status and directs the approver to Experience Pass.'),
   fixture('already-actioned', 'approver', 'Already Actioned', 'Explains that approval is no longer available and links to the current request.'),
   fixture('cte-notification', 'department', 'CTE Notification', 'Notifies CTE and identifies the latest approver for follow-up.'),
   fixture('title-i-notification', 'department', 'Title I Notification', 'Notifies Title I and identifies the latest approver for follow-up.'),
-  fixture('transportation-services-notification', 'department', 'Transportation Services Notification', 'Provides the campus and trip context needed to continue in ExperiencePass.'),
+  fixture('transportation-services-notification', 'department', 'Transportation Services Notification', 'Provides the campus and trip context needed to continue in Experience Pass.'),
 ]
 
 export function buildExperiencePassEmail(
@@ -137,6 +139,9 @@ export function buildExperiencePassEmail(
 ): BuiltExperiencePassEmail {
   assertContext(context)
   const presentation = presentationFor(templateId, context)
+  const actionContract = templateId === 'cte-notification' || templateId === 'title-i-notification'
+    ? { label: 'View in Data Workspace', url: context.dataWorkspaceUrl }
+    : { label: 'View Request', url: context.reviewUrl }
   const detailHtml = renderDetails(presentation.details)
   const heading = `Field Trip Request ${context.uid}`
   const status = renderStatus(presentation.status, presentation.statusTone)
@@ -151,7 +156,7 @@ export function buildExperiencePassEmail(
     '',
     ...presentation.details.map(([label, value]) => `${label}: ${value}`),
     ...presentation.textSections,
-    context.reviewUrl && presentation.actions ? `\nOpen Request in ExperiencePass: ${context.reviewUrl}` : '',
+    presentation.actions ? `\n${actionContract.label}: ${actionContract.url}` : '',
     '',
     'This is an automated notification from Experience Pass. Please do not reply to this email.',
   ].filter(Boolean).join('\n')
@@ -227,7 +232,7 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
       return {
         audience: 'requester', label: 'Approved', description: 'Final approval', headerLabel: 'Approval Notification', status: 'Approved', statusTone: 'green',
         subject: `Field Trip Request ${context.uid} Approved`,
-        introduction: 'All displayed ExperiencePass approval stages are complete. Keep the trip date and destination below for reference.',
+        introduction: 'All displayed Experience Pass approval stages are complete. Keep the trip date and destination below for reference.',
         details: requestDetails,
         sections: `${renderApprovalPath(context.approvalPath, true)}${transportationNotice}`,
         textSections: ['\nCompleted approval stages:', ...context.approvalPath.map(({ stage, approverName }) => `✓ ${stage} — ${approverName}`), '\nTransportation Services coordination', 'No contact timeline is currently available.'],
@@ -243,7 +248,7 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
       return {
         audience: 'requester', label: 'Request for Details', description: 'Details requested', headerLabel: 'Approval Notification', status: 'Details Requested', statusTone: 'blue',
         subject: `Additional Details Requested: Field Trip ${context.uid}`, introduction: 'Additional information is needed before the approval process can continue.', details: requestDetails,
-        sections: renderMessagePanel('Requested information', context.requestedDetails, 'blue'), textSections: ['\nRequested information:', context.requestedDetails], actions: renderOpenRequest(context.reviewUrl, 'Open Request in ExperiencePass'),
+        sections: renderMessagePanel('Requested information', context.requestedDetails, 'blue'), textSections: ['\nRequested information:', context.requestedDetails], actions: openRequest,
       }
     case 'pending-approval':
     case 'pending-approval-additional-review': {
@@ -252,13 +257,13 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
         audience: 'approver', label: additional ? 'Pending Approval · Additional Review' : 'Pending Approval', description: 'Approver notification', headerLabel: 'Approval Notification',
         status: additional ? 'Additional Review Required' : 'Action Required', statusTone: additional ? 'blue' : 'teal',
         subject: `Approval Request: Field Trip ${context.uid}`, introduction: `${context.campusName} submitted a ${context.tripType} field trip for your review as ${context.currentApprovalStage}.`,
-        details: approverDetails, sections: '', textSections: [], actions: renderOpenRequest(context.reviewUrl, 'Open Request in ExperiencePass'),
+        details: approverDetails, sections: '', textSections: [], actions: openRequest,
       }
     }
     case 'already-actioned':
       return {
         audience: 'approver', label: 'Already Actioned', description: 'Approval no longer available', headerLabel: 'Approval Notification', status: 'Already Actioned', statusTone: 'yellow',
-        subject: `Approval No Longer Available: Field Trip ${context.uid}`, introduction: 'This request no longer requires your approval. Open ExperiencePass to review the current request status.', details: approverDetails,
+        subject: `Approval No Longer Available: Field Trip ${context.uid}`, introduction: 'This request no longer requires your approval. Open Experience Pass to review the current request status.', details: approverDetails,
         sections: '', textSections: [], actions: openRequest,
       }
     case 'cte-notification':
@@ -266,21 +271,21 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
       const department = templateId === 'cte-notification' ? 'CTE' : 'Title I'
       return {
         audience: 'department', label: `${department} Notification`, description: `${department} coordination`, headerLabel: 'Department Notification', status: 'Coordination Requested', statusTone: 'blue',
-        subject: `${department} Coordination: Field Trip ${context.uid}`, introduction: `This field trip request includes ${department} involvement. Review the general request information below. If follow-up or clarification is needed, coordinate with the latest approver in the approval chain.`,
+        subject: `${department} Coordination: Field Trip ${context.uid}`, introduction: `This field trip request includes ${department} involvement. View the request in the Experience Pass Data Workspace. If follow-up or clarification is needed, coordinate with the latest approver in the approval chain.`,
         details: requestDetails, sections: renderLatestApprover(context), textSections: ['\nLatest Approver:', context.latestApprover.name, context.latestApprover.role, context.latestApprover.email],
-        actions: renderOpenRequest(context.reviewUrl, 'Open Request in ExperiencePass'),
+        actions: renderOpenRequest(context.dataWorkspaceUrl, 'View in Data Workspace'),
       }
     }
     case 'transportation-services-notification':
       return {
         audience: 'department', label: 'Transportation Services Notification', description: 'Transportation coordination', headerLabel: 'Department Notification', status: 'Transportation Coordination', statusTone: 'blue',
-        subject: `Transportation Coordination: Field Trip ${context.uid}`, introduction: 'HISD bus transportation was requested. Use ExperiencePass for the operational request details and ongoing coordination.',
+        subject: `Transportation Coordination: Field Trip ${context.uid}`, introduction: 'HISD bus transportation was requested. Use Experience Pass for the operational request details and ongoing coordination.',
         details: [
           ['Campus', context.campusName], ['Campus Number', context.campusNumber], ['Sponsor Name', context.sponsorName],
           ['Trip Summary', `${context.tripType} field trip for ${context.studentCount} students and ${context.chaperoneCount} chaperones`],
           ['Destination', context.destination], ['Trip Date', context.tripDateDisplay], ['Number of Buses', String(context.numberOfBuses)],
         ],
-        sections: '', textSections: [], actions: renderOpenRequest(context.reviewUrl, 'Open Request in ExperiencePass'),
+        sections: '', textSections: [], actions: openRequest,
       }
   }
 }
@@ -330,13 +335,15 @@ function renderOpenRequest(url: string, label = 'View Request') {
 }
 
 function assertContext(context: NotificationContext) {
-  const required = [context.uid, context.campusName, context.campusNumber, context.requesterName, context.sponsorName, context.tripType, context.tripDateDisplay, context.destination, context.reviewUrl, context.latestApprover.name, context.latestApprover.role, context.latestApprover.email]
-  if (required.some((value) => !value.trim()) || !context.approvalPath.length) throw new Error('ExperiencePass email context is incomplete.')
-  try {
-    const url = new URL(context.reviewUrl)
-    if (url.protocol !== 'https:') throw new Error()
-  } catch {
-    throw new Error('ExperiencePass email links must use an HTTPS URL contract.')
+  const required = [context.uid, context.campusName, context.campusNumber, context.requesterName, context.sponsorName, context.tripType, context.tripDateDisplay, context.destination, context.reviewUrl, context.dataWorkspaceUrl, context.latestApprover.name, context.latestApprover.role, context.latestApprover.email]
+  if (required.some((value) => !value.trim()) || !context.approvalPath.length) throw new Error('Experience Pass email context is incomplete.')
+  for (const link of [context.reviewUrl, context.dataWorkspaceUrl]) {
+    try {
+      const url = new URL(link)
+      if (url.protocol !== 'https:') throw new Error()
+    } catch {
+      throw new Error('Experience Pass email links must use an HTTPS URL contract.')
+    }
   }
 }
 
