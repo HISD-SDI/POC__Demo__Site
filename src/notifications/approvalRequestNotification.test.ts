@@ -19,8 +19,6 @@ describe('finalized ExperiencePass email templates', () => {
       'request-for-details',
       'pending-approval',
       'pending-approval-additional-review',
-      'approval-confirmation',
-      'reject-confirmation',
       'already-actioned',
       'cte-notification',
       'title-i-notification',
@@ -90,6 +88,25 @@ describe('finalized ExperiencePass email templates', () => {
     expect(message.html).not.toContain('Latest Approver')
     expect(message.html).not.toContain('>Approve<')
     expect(message.html).not.toContain('>Reject<')
+  })
+
+  it.each(['pending-approval', 'pending-approval-additional-review'] as const)(
+    '%s sends the approver to ExperiencePass instead of offering email decisions',
+    (templateId) => {
+      const message = buildExperiencePassEmail(templateId, demoNotificationContext)
+
+      expect(message.html).toContain('Open Request in ExperiencePass')
+      expect(message.html).not.toContain('>Approve<')
+      expect(message.html).not.toContain('>Reject<')
+      expect(message.html).not.toContain('Confirm Reject')
+    },
+  )
+
+  it('uses the same light teal treatment for the email header and footer', () => {
+    const message = buildExperiencePassEmail('submitted-receipt', demoNotificationContext)
+
+    expect(message.html).toContain('class="email-header" style="padding:20px 40px;background:#E6F6F7')
+    expect(message.html).toContain('class="email-footer" style="padding:20px 40px;background:#E6F6F7')
   })
 
   it('retains normal dynamic field substitution for notification context values', () => {

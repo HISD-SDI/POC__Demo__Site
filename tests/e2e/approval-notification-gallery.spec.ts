@@ -10,6 +10,14 @@ test('finalized gallery separates audiences and previews department notification
   await expect(page.getByRole('heading', { name: 'Department Notifications' })).toBeVisible()
   await expect(page.getByText('Compare proposed alternatives')).toHaveCount(0)
   await expect(page.getByText('Dynamic email')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Approval Confirmation/ })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: /Reject Confirmation/ })).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Pending Approval Directs the approver to review and act in ExperiencePass.' }).click()
+  const pending = page.getByTitle('Pending Approval desktop email preview').contentFrame()
+  await expect(pending.getByRole('link', { name: 'Open Request in ExperiencePass' })).toBeVisible()
+  await expect(pending.getByRole('button', { name: 'Approve' })).toHaveCount(0)
+  await expect(pending.getByRole('button', { name: 'Reject' })).toHaveCount(0)
 
   await page.getByRole('button', { name: /CTE Notification/ }).click()
   const cte = page.getByTitle('CTE Notification desktop email preview').contentFrame()

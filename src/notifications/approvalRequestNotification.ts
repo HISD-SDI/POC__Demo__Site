@@ -12,8 +12,6 @@ export type EmailTemplateId =
   | 'request-for-details'
   | 'pending-approval'
   | 'pending-approval-additional-review'
-  | 'approval-confirmation'
-  | 'reject-confirmation'
   | 'already-actioned'
   | 'cte-notification'
   | 'title-i-notification'
@@ -125,11 +123,9 @@ export const emailTemplateFixtures: readonly EmailTemplateFixture[] = [
   fixture('approved', 'requester', 'Approved', 'Confirms every displayed approval stage and reminds the requester of trip details.', { ...demoNotificationContext, numberOfBuses: 2 }),
   fixture('rejected', 'requester', 'Rejected', 'Explains the rejection and keeps the request details available.'),
   fixture('request-for-details', 'requester', 'Request for Details', 'Tells the requester what must be clarified in ExperiencePass.'),
-  fixture('pending-approval', 'approver', 'Pending Approval', 'Provides the finalized approval-request presentation.'),
-  fixture('pending-approval-additional-review', 'approver', 'Pending Approval · Additional Review', 'Uses the blue additional-review status treatment.'),
-  fixture('approval-confirmation', 'approver', 'Approval Confirmation', 'Confirms the approver decision without implying final requester approval.'),
-  fixture('reject-confirmation', 'approver', 'Reject Confirmation', 'Shows the comment-free rejection confirmation step.'),
-  fixture('already-actioned', 'approver', 'Already Actioned', 'Removes decision controls when the approval is no longer available.'),
+  fixture('pending-approval', 'approver', 'Pending Approval', 'Directs the approver to review and act in ExperiencePass.'),
+  fixture('pending-approval-additional-review', 'approver', 'Pending Approval · Additional Review', 'Uses the blue additional-review status and directs the approver to ExperiencePass.'),
+  fixture('already-actioned', 'approver', 'Already Actioned', 'Explains that approval is no longer available and links to the current request.'),
   fixture('cte-notification', 'department', 'CTE Notification', 'Notifies CTE and identifies the latest approver for follow-up.'),
   fixture('title-i-notification', 'department', 'Title I Notification', 'Notifies Title I and identifies the latest approver for follow-up.'),
   fixture('transportation-services-notification', 'department', 'Transportation Services Notification', 'Provides the campus and trip context needed to continue in ExperiencePass.'),
@@ -144,7 +140,7 @@ export function buildExperiencePassEmail(
   const detailHtml = renderDetails(presentation.details)
   const heading = `Field Trip Request ${context.uid}`
   const status = renderStatus(presentation.status, presentation.statusTone)
-  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(presentation.subject)}</title><style>@media(max-width:480px){.email-outer{padding:12px 6px!important}.email-body{padding:22px 20px 24px!important}.email-header,.email-footer{padding:17px 20px!important}.summary-cell{display:block!important;width:100%!important;padding:9px 14px!important}.email-actions{flex-direction:column!important}.email-actions>*{width:100%!important;flex:none!important}.request-heading{font-size:19px!important}}</style></head><body style="margin:0;background:#F8F9F9;color:#24383C;font-family:'Radio Canada',Arial,sans-serif"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;background:#F8F9F9"><tr><td class="email-outer" align="center" style="padding:24px 12px"><table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;border-collapse:separate;border-spacing:0;background:#FFFFFF;border:1px solid #D9DFE0;border-radius:10px;box-shadow:1.5px 2.6px 3px 1px rgba(36,56,60,.16);overflow:hidden"><tr><td class="email-header" style="padding:20px 40px;background:#E6F6F7;border-radius:10px 10px 0 0"><div style="display:flex;align-items:center;gap:12px"><img src="${escapeHtml(hisdBlueCityLogoDataUrl)}" height="24" alt="Houston Independent School District" style="display:block;width:auto;height:24px"><span aria-hidden="true" style="display:inline-block;width:1px;height:34px;background:#AFCBCD"></span><div style="display:flex;flex-direction:column;justify-content:center"><span style="color:#24383C;font-family:'Parkinsans','Radio Canada',Arial,sans-serif;font-size:16px;font-weight:700;line-height:1.25">Experience Pass</span><span style="margin-top:3px;color:#006F78;font-size:10px;font-weight:700;letter-spacing:.06em;line-height:1.25;text-transform:uppercase">${escapeHtml(presentation.headerLabel)}</span></div></div></td></tr><tr><td class="email-body" style="padding:28px 40px 32px"><h1 class="request-heading" style="margin:0;color:#24383C;font-family:'Parkinsans','Radio Canada',Arial,sans-serif;font-size:22px;line-height:1.3">${escapeHtml(heading)}</h1>${status}<p style="margin:14px 0 0;color:#526468;font-size:14px;line-height:1.6">${escapeHtml(presentation.introduction)}</p><div style="margin-top:24px">${detailHtml}</div>${presentation.sections}${presentation.actions}</td></tr><tr><td class="email-footer" style="padding:20px 40px;background:#00A3AF;border-radius:0 0 10px 10px;color:#FFFFFF;font-size:11.5px;line-height:1.6"><p style="margin:0 0 4px">This is an automated notification from Experience Pass. Please do not reply to this email.</p><p style="margin:0;color:rgba(255,255,255,.86)">Houston Independent School District &middot; 4400 W. 18th St, Houston, TX 77092</p></td></tr></table></td></tr></table></body></html>`
+  const html = `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(presentation.subject)}</title><style>@media(max-width:480px){.email-outer{padding:12px 6px!important}.email-body{padding:22px 20px 24px!important}.email-header,.email-footer{padding:17px 20px!important}.summary-cell{display:block!important;width:100%!important;padding:9px 14px!important}.email-actions{flex-direction:column!important}.email-actions>*{width:100%!important;flex:none!important}.request-heading{font-size:19px!important}}</style></head><body style="margin:0;background:#F8F9F9;color:#24383C;font-family:'Radio Canada',Arial,sans-serif"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;background:#F8F9F9"><tr><td class="email-outer" align="center" style="padding:24px 12px"><table role="presentation" width="600" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;border-collapse:separate;border-spacing:0;background:#FFFFFF;border:1px solid #D9DFE0;border-radius:10px;box-shadow:1.5px 2.6px 3px 1px rgba(36,56,60,.16);overflow:hidden"><tr><td class="email-header" style="padding:20px 40px;background:#E6F6F7;border-radius:10px 10px 0 0"><div style="display:flex;align-items:center;gap:12px"><img src="${escapeHtml(hisdBlueCityLogoDataUrl)}" height="24" alt="Houston Independent School District" style="display:block;width:auto;height:24px"><span aria-hidden="true" style="display:inline-block;width:1px;height:34px;background:#AFCBCD"></span><div style="display:flex;flex-direction:column;justify-content:center"><span style="color:#24383C;font-family:'Parkinsans','Radio Canada',Arial,sans-serif;font-size:16px;font-weight:700;line-height:1.25">Experience Pass</span><span style="margin-top:3px;color:#006F78;font-size:10px;font-weight:700;letter-spacing:.06em;line-height:1.25;text-transform:uppercase">${escapeHtml(presentation.headerLabel)}</span></div></div></td></tr><tr><td class="email-body" style="padding:28px 40px 32px"><h1 class="request-heading" style="margin:0;color:#24383C;font-family:'Parkinsans','Radio Canada',Arial,sans-serif;font-size:22px;line-height:1.3">${escapeHtml(heading)}</h1>${status}<p style="margin:14px 0 0;color:#526468;font-size:14px;line-height:1.6">${escapeHtml(presentation.introduction)}</p><div style="margin-top:24px">${detailHtml}</div>${presentation.sections}${presentation.actions}</td></tr><tr><td class="email-footer" style="padding:20px 40px;background:#E6F6F7;border-radius:0 0 10px 10px;color:#24383C;font-size:11.5px;line-height:1.6"><p style="margin:0 0 4px">This is an automated notification from Experience Pass. Please do not reply to this email.</p><p style="margin:0;color:#526468">Houston Independent School District &middot; 4400 W. 18th St, Houston, TX 77092</p></td></tr></table></td></tr></table></body></html>`
 
   const text = [
     presentation.headerLabel.toUpperCase(),
@@ -256,21 +252,9 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
         audience: 'approver', label: additional ? 'Pending Approval · Additional Review' : 'Pending Approval', description: 'Approver notification', headerLabel: 'Approval Notification',
         status: additional ? 'Additional Review Required' : 'Action Required', statusTone: additional ? 'blue' : 'teal',
         subject: `Approval Request: Field Trip ${context.uid}`, introduction: `${context.campusName} submitted a ${context.tripType} field trip for your review as ${context.currentApprovalStage}.`,
-        details: approverDetails, sections: '', textSections: [], actions: renderDecisionActions(context.reviewUrl),
+        details: approverDetails, sections: '', textSections: [], actions: renderOpenRequest(context.reviewUrl, 'Open Request in ExperiencePass'),
       }
     }
-    case 'approval-confirmation':
-      return {
-        audience: 'approver', label: 'Approval Confirmation', description: 'Approval recorded', headerLabel: 'Approval Notification', status: 'Approval Recorded', statusTone: 'green',
-        subject: `Approval Recorded: Field Trip ${context.uid}`, introduction: 'Your approval was recorded. This confirmation does not imply that the full approval chain is complete.', details: approverDetails,
-        sections: '', textSections: [], actions: openRequest,
-      }
-    case 'reject-confirmation':
-      return {
-        audience: 'approver', label: 'Reject Confirmation', description: 'Confirm rejection', headerLabel: 'Approval Notification', status: 'Confirm Rejection', statusTone: 'red',
-        subject: `Confirm Rejection: Field Trip ${context.uid}`, introduction: 'Confirm that you want to reject this field trip request. No comments are collected through this email.', details: approverDetails,
-        sections: '', textSections: [], actions: renderRejectConfirmation(),
-      }
     case 'already-actioned':
       return {
         audience: 'approver', label: 'Already Actioned', description: 'Approval no longer available', headerLabel: 'Approval Notification', status: 'Already Actioned', statusTone: 'yellow',
@@ -343,14 +327,6 @@ function renderLatestApprover(context: NotificationContext) {
 
 function renderOpenRequest(url: string, label = 'View Request') {
   return `<div style="margin-top:26px"><a href="${escapeHtml(url)}" style="box-sizing:border-box;display:flex;width:100%;min-height:44px;padding:12px 20px;align-items:center;justify-content:center;border:1px solid #00838C;border-radius:8px;background:#00838C;color:#FFFFFF;text-align:center;text-decoration:none;font-weight:700">${escapeHtml(label)}</a></div>`
-}
-
-function renderDecisionActions(url: string) {
-  return `<div class="email-actions" style="display:flex;gap:10px;align-items:stretch;margin-top:26px"><button type="button" style="box-sizing:border-box;flex:1;min-width:108px;min-height:44px;padding:11px 16px;border:1.5px solid #2E7D32;border-radius:8px;background:#2E7D32;color:#FFFFFF;font:700 14px Arial,sans-serif">Approve</button><button type="button" style="box-sizing:border-box;flex:1;min-width:108px;min-height:44px;padding:11px 16px;border:1.5px solid #B94D51;border-radius:8px;background:#FFFFFF;color:#B94D51;font:700 14px Arial,sans-serif">Reject</button><a href="${escapeHtml(url)}" style="box-sizing:border-box;display:inline-flex;flex:1;min-width:108px;min-height:44px;padding:11px 16px;align-items:center;justify-content:center;border:1.5px solid #1A5E9A;border-radius:8px;background:#1A5E9A;color:#FFFFFF;text-decoration:none;font:700 14px Arial,sans-serif">Request Details</a></div>`
-}
-
-function renderRejectConfirmation() {
-  return `<div class="email-actions" style="display:flex;gap:10px;align-items:stretch;margin-top:26px"><button type="button" style="box-sizing:border-box;flex:1;min-height:44px;padding:11px 20px;border:1.5px solid #B94D51;border-radius:8px;background:#B94D51;color:#FFFFFF;font:700 14px Arial,sans-serif">Confirm Reject</button><button type="button" style="box-sizing:border-box;flex:1;min-height:44px;padding:11px 20px;border:1.5px solid #BCC7C9;border-radius:8px;background:#FFFFFF;color:#24383C;font:700 14px Arial,sans-serif">Cancel</button></div>`
 }
 
 function assertContext(context: NotificationContext) {

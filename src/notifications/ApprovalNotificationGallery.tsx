@@ -9,7 +9,7 @@ import './approvalNotificationGallery.css'
 
 const audienceGroups: readonly { audience: EmailAudience; heading: string; description: string }[] = [
   { audience: 'requester', heading: 'Requester Notifications', description: 'Receipts, final outcomes, and requests for clarification.' },
-  { audience: 'approver', heading: 'Approver Notifications', description: 'Approval requests and decision confirmations.' },
+  { audience: 'approver', heading: 'Approver Notifications', description: 'Approval requests that continue in ExperiencePass.' },
   { audience: 'department', heading: 'Department Notifications', description: 'Direct CTE, Title I, and Transportation Services coordination.' },
 ]
 

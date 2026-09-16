@@ -19,13 +19,14 @@ describe('ExperiencePass email template gallery', () => {
       'Request for Details',
       'Pending Approval',
       'Pending Approval · Additional Review',
-      'Approval Confirmation',
-      'Reject Confirmation',
       'Already Actioned',
       'CTE Notification',
       'Title I Notification',
       'Transportation Services Notification',
     ]) expect(markup).toContain(label)
+
+    expect(markup).not.toContain('Approval Confirmation')
+    expect(markup).not.toContain('Reject Confirmation')
 
     expect(markup).toContain('Approval Notification Gallery')
     expect(markup).toContain('data:image/svg+xml')
