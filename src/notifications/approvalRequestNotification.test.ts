@@ -27,6 +27,7 @@ describe('finalized ExperiencePass email templates', () => {
       'request-for-details',
       'pending-approval',
       'pending-approval-additional-review',
+      'awaiting-approval',
       'already-actioned',
       'cte-notification',
       'title-i-notification',
@@ -114,6 +115,30 @@ describe('finalized ExperiencePass email templates', () => {
     },
   )
 
+  it('renders one informational Awaiting Approval template with a dynamic review duration', () => {
+    const message = buildExperiencePassEmail('awaiting-approval', {
+      ...demoNotificationContext,
+      awaitingReviewDuration: '1 business day',
+    })
+
+    for (const value of [
+      'Awaiting Approval',
+      'This request has been awaiting review for 1 business day.',
+      'Jones High School',
+      'Houston Museum of Natural Science',
+      'August 18, 2026',
+      'Ana Morales',
+    ]) {
+      expect(message.html).toContain(value)
+      expect(message.text).toContain(value)
+    }
+    expect(message.html).toContain('>Review Request</a>')
+    expect(message.text).toContain(`Review Request: ${demoNotificationContext.reviewUrl}`)
+    expect(message.html).not.toContain('>Approve<')
+    expect(message.html).not.toContain('>Reject<')
+    expect(message.html).not.toContain('>Return<')
+  })
+
   it('uses the same light teal treatment for the email header and footer', () => {
     const message = buildExperiencePassEmail('submitted-receipt', demoNotificationContext)
 
@@ -144,7 +169,7 @@ describe('finalized ExperiencePass email templates', () => {
   })
 
   it('standardizes every non-CTE and non-Title I action as View Request', () => {
-    for (const fixture of emailTemplateFixtures.filter(({ id }) => !['cte-notification', 'title-i-notification'].includes(id))) {
+    for (const fixture of emailTemplateFixtures.filter(({ id }) => !['cte-notification', 'title-i-notification', 'awaiting-approval'].includes(id))) {
       const message = buildExperiencePassEmail(fixture.id, fixture.context)
       if (message.html.includes('<div style="margin-top:26px">')) {
         expect(message.html).toContain('>View Request</a>')

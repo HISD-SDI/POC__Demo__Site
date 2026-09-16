@@ -19,6 +19,15 @@ test('finalized gallery separates audiences and previews department notification
   await expect(pending.getByRole('button', { name: 'Approve' })).toHaveCount(0)
   await expect(pending.getByRole('button', { name: 'Reject' })).toHaveCount(0)
 
+  await page.getByRole('button', { name: /Awaiting Approval/ }).click()
+  const awaiting = page.getByTitle('Awaiting Approval desktop email preview').contentFrame()
+  await expect(awaiting.getByText('This request has been awaiting review for 3 business days.')).toBeVisible()
+  await expect(awaiting.getByText('Jones High School', { exact: true })).toBeVisible()
+  await expect(awaiting.getByText('Houston Museum of Natural Science', { exact: true })).toBeVisible()
+  await expect(awaiting.getByRole('link', { name: 'Review Request' })).toBeVisible()
+  await expect(awaiting.getByRole('button', { name: 'Approve' })).toHaveCount(0)
+  await expect(awaiting.getByRole('button', { name: 'Reject' })).toHaveCount(0)
+
   await page.getByRole('button', { name: /CTE Notification/ }).click()
   const cte = page.getByTitle('CTE Notification desktop email preview').contentFrame()
   await expect(cte.getByText('Latest Approver', { exact: true })).toBeVisible()

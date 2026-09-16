@@ -4,7 +4,7 @@ A static stakeholder gallery for reviewing the finalized Experience Pass email t
 
 This repository intentionally contains only demo-safe notification fixtures, the email renderer, visual gallery, tests, and static branding assets. It has no connection to the Experience Pass application, authentication, Dataverse, Azure Functions, Graph delivery, or production request data. Any visible action URL is a non-routable placeholder used solely to preserve the finalized email presentation.
 
-Requester, approver, and Transportation Services messages use a demo-safe **View Request** link. CTE and Title I messages use a separate demo-safe **View in Data Workspace** contract for the Experience Pass Data Workspace. The POC does not render in-email approval choices or separate decision-confirmation emails.
+Requester, approver, and Transportation Services messages use demo-safe navigation links. The general Awaiting Approval template uses **Review Request** with a dynamic review-duration field; the other request links remain **View Request**. CTE and Title I messages use a separate demo-safe **View in Data Workspace** contract for the Experience Pass Data Workspace. The POC does not render in-email approval choices or separate decision-confirmation emails.
 
 ## Local review
 

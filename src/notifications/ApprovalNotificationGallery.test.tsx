@@ -19,6 +19,7 @@ describe('ExperiencePass email template gallery', () => {
       'Request for Details',
       'Pending Approval',
       'Pending Approval · Additional Review',
+      'Awaiting Approval',
       'Already Actioned',
       'CTE Notification',
       'Title I Notification',

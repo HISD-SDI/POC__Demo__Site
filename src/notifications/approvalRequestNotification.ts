@@ -12,6 +12,7 @@ export type EmailTemplateId =
   | 'request-for-details'
   | 'pending-approval'
   | 'pending-approval-additional-review'
+  | 'awaiting-approval'
   | 'already-actioned'
   | 'cte-notification'
   | 'title-i-notification'
@@ -36,6 +37,7 @@ export type NotificationContext = {
   chaperoneCount: number
   numberOfBuses: number
   currentApprovalStage: string
+  awaitingReviewDuration: string
   reviewUrl: string
   dataWorkspaceUrl: string
   approvalPath: readonly ApprovalRouteStep[]
@@ -93,6 +95,7 @@ export const demoNotificationContext: NotificationContext = {
   chaperoneCount: 8,
   numberOfBuses: 2,
   currentApprovalStage: 'Principal',
+  awaitingReviewDuration: '3 business days',
   reviewUrl: 'https://experience-pass.example.invalid/requests/FTR-1042',
   dataWorkspaceUrl: 'https://experience-pass-data-workspace.example.invalid/requests/FTR-1042',
   approvalPath: [
@@ -127,6 +130,7 @@ export const emailTemplateFixtures: readonly EmailTemplateFixture[] = [
   fixture('request-for-details', 'requester', 'Request for Details', 'Tells the requester what must be clarified in Experience Pass.'),
   fixture('pending-approval', 'approver', 'Pending Approval', 'Directs the approver to review and act in Experience Pass.'),
   fixture('pending-approval-additional-review', 'approver', 'Pending Approval · Additional Review', 'Uses the blue additional-review status and directs the approver to Experience Pass.'),
+  fixture('awaiting-approval', 'approver', 'Awaiting Approval', 'Provides one informational pending-review message for initial notices and reminders.'),
   fixture('already-actioned', 'approver', 'Already Actioned', 'Explains that approval is no longer available and links to the current request.'),
   fixture('cte-notification', 'department', 'CTE Notification', 'Notifies CTE and identifies the latest approver for follow-up.'),
   fixture('title-i-notification', 'department', 'Title I Notification', 'Notifies Title I and identifies the latest approver for follow-up.'),
@@ -141,7 +145,9 @@ export function buildExperiencePassEmail(
   const presentation = presentationFor(templateId, context)
   const actionContract = templateId === 'cte-notification' || templateId === 'title-i-notification'
     ? { label: 'View in Data Workspace', url: context.dataWorkspaceUrl }
-    : { label: 'View Request', url: context.reviewUrl }
+    : templateId === 'awaiting-approval'
+      ? { label: 'Review Request', url: context.reviewUrl }
+      : { label: 'View Request', url: context.reviewUrl }
   const detailHtml = renderDetails(presentation.details)
   const heading = `Field Trip Request ${context.uid}`
   const status = renderStatus(presentation.status, presentation.statusTone)
@@ -191,6 +197,13 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
     ['Trip Type', context.tripType],
     ['Current Approval Stage', context.currentApprovalStage],
     ['Transportation Requestor', context.transportationRequestorName],
+  ]
+  const awaitingApprovalDetails: readonly Detail[] = [
+    ['Campus', context.campusName],
+    ['Requester', context.requesterName],
+    ['Destination', context.destination],
+    ['Trip Date', context.tripDateDisplay],
+    ['Current Approval Stage', context.currentApprovalStage],
   ]
   const requestDetails: readonly Detail[] = [
     ['Campus', context.campusName],
@@ -260,6 +273,13 @@ function presentationFor(templateId: EmailTemplateId, context: NotificationConte
         details: approverDetails, sections: '', textSections: [], actions: openRequest,
       }
     }
+    case 'awaiting-approval':
+      return {
+        audience: 'approver', label: 'Awaiting Approval', description: 'Informational pending-review notification', headerLabel: 'Approval Notification',
+        status: 'Awaiting Approval', statusTone: 'blue', subject: `Awaiting Approval: Field Trip ${context.uid}`,
+        introduction: `This request has been awaiting review for ${context.awaitingReviewDuration}.`,
+        details: awaitingApprovalDetails, sections: '', textSections: [], actions: renderOpenRequest(context.reviewUrl, 'Review Request'),
+      }
     case 'already-actioned':
       return {
         audience: 'approver', label: 'Already Actioned', description: 'Approval no longer available', headerLabel: 'Approval Notification', status: 'Already Actioned', statusTone: 'yellow',
@@ -335,7 +355,7 @@ function renderOpenRequest(url: string, label = 'View Request') {
 }
 
 function assertContext(context: NotificationContext) {
-  const required = [context.uid, context.campusName, context.campusNumber, context.requesterName, context.sponsorName, context.tripType, context.tripDateDisplay, context.destination, context.reviewUrl, context.dataWorkspaceUrl, context.latestApprover.name, context.latestApprover.role, context.latestApprover.email]
+  const required = [context.uid, context.campusName, context.campusNumber, context.requesterName, context.sponsorName, context.tripType, context.tripDateDisplay, context.destination, context.awaitingReviewDuration, context.reviewUrl, context.dataWorkspaceUrl, context.latestApprover.name, context.latestApprover.role, context.latestApprover.email]
   if (required.some((value) => !value.trim()) || !context.approvalPath.length) throw new Error('Experience Pass email context is incomplete.')
   for (const link of [context.reviewUrl, context.dataWorkspaceUrl]) {
     try {
