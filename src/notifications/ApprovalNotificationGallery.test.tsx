@@ -31,7 +31,8 @@ describe('ExperiencePass email template gallery', () => {
 
     expect(markup).toContain('Approval Notification Gallery')
     expect(markup).toContain('data:image/svg+xml')
-    expect(markup).toContain('%234975bd')
+    expect(markup).toContain('%2300a3af')
+    expect(markup).not.toContain('%234975bd')
     expect(markup).toContain('Desktop email preview')
     expect(markup).toContain('Narrow email preview')
     expect(markup).toContain('No email is sent from this gallery.')

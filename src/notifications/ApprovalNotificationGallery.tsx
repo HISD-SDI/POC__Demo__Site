@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { hisdBlueCityLogoDataUrl } from '../branding/experiencePassBrand'
+import { hisdTealCityLogoDataUrl } from '../branding/experiencePassBrand'
 import {
   buildExperiencePassEmail,
   emailTemplateFixtures,
@@ -26,7 +26,7 @@ export function ApprovalNotificationGallery() {
       <a className="notification-skip-link" href="#notification-preview">Skip to preview</a>
       <header className="notification-gallery-header">
         <div className="notification-brand-bar">
-          <img src={hisdBlueCityLogoDataUrl} alt="Houston Independent School District" />
+          <img src={hisdTealCityLogoDataUrl} alt="Houston Independent School District" />
           <span aria-hidden="true" />
           <strong>Experience Pass</strong>
         </div>

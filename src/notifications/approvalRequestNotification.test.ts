@@ -189,13 +189,14 @@ describe('finalized ExperiencePass email templates', () => {
     }
   })
 
-  it('uses the existing blue-city HISD mark instead of the yellow-city email submark', () => {
+  it('uses the teal HISD city mark throughout the email set', () => {
     const message = buildExperiencePassEmail('submitted-receipt', demoNotificationContext)
 
     expect(message.html).toContain('data:image/svg+xml')
-    expect(message.html).toContain('%234975bd')
+    expect(message.html).toContain('%2300a3af')
+    expect(message.html).not.toContain('%234975bd')
+    expect(message.html).not.toContain('%23f9d04e')
     expect(message.html).not.toContain('hisd-logo-submark-white-yellow')
-    expect(message.html).not.toContain('%23ffd100')
   })
 
 })
